@@ -22,7 +22,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
-  SidebarTrigger,
+  SidebarTrigger, // Keep SidebarTrigger import
 } from '@/components/ui/sidebar';
 import { AppLogo } from '@/components/common/AppLogo';
 import { UserNav } from '@/components/common/UserNav';
@@ -63,9 +63,10 @@ export default function RootLayout({
         <SidebarProvider defaultOpen={true} collapsible="icon">
           <Sidebar variant="sidebar" collapsible="icon" className="border-r">
             <SidebarHeader className="p-0">
-              <div className="flex h-16 items-center justify-between border-b px-4"> {/* Modified classes */}
+              {/* This div's justify content will change based on sidebar state */}
+              <div className="flex h-16 items-center justify-between border-b px-4 group-data-[state=collapsed]:justify-center">
                  <AppLogo />
-                 <SidebarTrigger /> {/* Moved SidebarTrigger here */}
+                 <SidebarTrigger /> {/* SidebarTrigger remains here */}
               </div>
             </SidebarHeader>
             <SidebarContent className="p-2">
@@ -88,9 +89,8 @@ export default function RootLayout({
                 ))}
               </SidebarMenu>
             </SidebarContent>
-            <SidebarFooter className="p-2 border-t"> {/* Removed items-center */}
+            <SidebarFooter className="p-2 border-t">
                <UserNav />
-               {/* SidebarTrigger removed from here */}
             </SidebarFooter>
           </Sidebar>
           <SidebarInset>
