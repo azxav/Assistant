@@ -13,8 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Settings, UserCircle2 } from "lucide-react";
-import { useSidebar } from "@/components/ui/sidebar"; // Import useSidebar
-import { cn } from "@/lib/utils"; // Import cn
+import { useSidebar } from "@/components/ui/sidebar"; 
+import { cn } from "@/lib/utils"; 
+import React from "react"; // Import React for useState and useEffect
 
 // TODO: Replace with actual authentication logic
 const mockUser: Partial<User> & { name?: string } = {
@@ -25,9 +26,13 @@ const mockUser: Partial<User> & { name?: string } = {
 
 
 export function UserNav() {
-  const { state } = useSidebar(); // Get sidebar state
-  // In a real app, you'd get the user from an auth context
+  const { state } = useSidebar(); 
   const user = mockUser;
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const getInitials = (name?: string | null) => {
     if (!name) return "AI";
@@ -39,7 +44,7 @@ export function UserNav() {
   };
 
   return (
-    <div className={cn(state === 'collapsed' && "flex justify-center w-full")}>
+    <div className={cn(mounted && state === 'collapsed' && "flex justify-center w-full")}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
