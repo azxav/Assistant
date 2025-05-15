@@ -13,13 +13,13 @@ export function AppLogo() {
       href="/"
       className={cn(
         "flex items-center group",
-        state === 'collapsed' ? "justify-center w-full" : "gap-2.5", // Conditional gap and justification
-        "p-2" // Common padding for the link
+        state === 'expanded' ? "gap-2.5" : "", // Changed conditional styling
+        "p-2" 
       )}
       aria-label="ZEKA Home"
     >
       <AppWindowIcon className="h-7 w-7 text-primary transition-transform group-hover:scale-110 shrink-0" />
-      {state === 'expanded' && ( // Conditionally render text
+      {state === 'expanded' && ( 
         <h1 className="text-xl font-semibold text-foreground tracking-tight">
           ZEKA
         </h1>

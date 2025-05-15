@@ -8,10 +8,6 @@ import {
   PlayCircle,
   Monitor,
   Share2,
-  // BotMessageSquare, // No longer used for AppLogo
-  // Users, // Not used
-  // FileText, // Not used
-  // MessageSquare, // Not used
 } from 'lucide-react';
 
 import './globals.css';
@@ -26,7 +22,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
-  SidebarTrigger, // Imported SidebarTrigger
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { AppLogo } from '@/components/common/AppLogo';
 import { UserNav } from '@/components/common/UserNav';
@@ -67,8 +63,9 @@ export default function RootLayout({
         <SidebarProvider defaultOpen={true} collapsible="icon">
           <Sidebar variant="sidebar" collapsible="icon" className="border-r">
             <SidebarHeader className="p-0">
-              <div className="flex h-16 items-center border-b px-2">
+              <div className="flex h-16 items-center justify-between border-b px-4"> {/* Modified classes */}
                  <AppLogo />
+                 <SidebarTrigger /> {/* Moved SidebarTrigger here */}
               </div>
             </SidebarHeader>
             <SidebarContent className="p-2">
@@ -91,13 +88,12 @@ export default function RootLayout({
                 ))}
               </SidebarMenu>
             </SidebarContent>
-            <SidebarFooter className="p-2 border-t items-center"> {/* Added items-center */}
+            <SidebarFooter className="p-2 border-t"> {/* Removed items-center */}
                <UserNav />
-               <SidebarTrigger className="mt-2" /> {/* Added SidebarTrigger, mt-2 for some spacing */}
+               {/* SidebarTrigger removed from here */}
             </SidebarFooter>
           </Sidebar>
           <SidebarInset>
-            {/* PageHeader will be rendered here by child pages, it no longer contains the trigger */}
             {children}
           </SidebarInset>
         </SidebarProvider>
