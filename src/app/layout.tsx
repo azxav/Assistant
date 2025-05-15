@@ -8,10 +8,10 @@ import {
   PlayCircle,
   Monitor,
   Share2,
-  BotMessageSquare,
-  Users,
-  FileText,
-  MessageSquare,
+  // BotMessageSquare, // No longer used for AppLogo
+  // Users, // Not used
+  // FileText, // Not used
+  // MessageSquare, // Not used
 } from 'lucide-react';
 
 import './globals.css';
@@ -26,7 +26,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
-  SidebarTrigger,
+  SidebarTrigger, // Imported SidebarTrigger
 } from '@/components/ui/sidebar';
 import { AppLogo } from '@/components/common/AppLogo';
 import { UserNav } from '@/components/common/UserNav';
@@ -91,11 +91,13 @@ export default function RootLayout({
                 ))}
               </SidebarMenu>
             </SidebarContent>
-            <SidebarFooter className="p-2 border-t">
+            <SidebarFooter className="p-2 border-t items-center"> {/* Added items-center */}
                <UserNav />
+               <SidebarTrigger className="mt-2" /> {/* Added SidebarTrigger, mt-2 for some spacing */}
             </SidebarFooter>
           </Sidebar>
           <SidebarInset>
+            {/* PageHeader will be rendered here by child pages, it no longer contains the trigger */}
             {children}
           </SidebarInset>
         </SidebarProvider>
