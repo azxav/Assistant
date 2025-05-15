@@ -1,3 +1,4 @@
+
 "use client";
 import type { User } from "firebase/auth"; // Assuming Firebase Auth
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,7 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Settings, UserCircle2 } from "lucide-react"; // Changed User to UserCircle2 for clarity
+import { LogOut, Settings, UserCircle2 } from "lucide-react";
+import { useSidebar } from "@/components/ui/sidebar"; // Import useSidebar
+import { cn } from "@/lib/utils"; // Import cn
 
 // TODO: Replace with actual authentication logic
 const mockUser: Partial<User> & { name?: string } = {
@@ -22,6 +25,7 @@ const mockUser: Partial<User> & { name?: string } = {
 
 
 export function UserNav() {
+  const { state } = useSidebar(); // Get sidebar state
   // In a real app, you'd get the user from an auth context
   const user = mockUser;
 
@@ -35,41 +39,43 @@ export function UserNav() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-          <Avatar className="h-10 w-10 border">
-            <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? "User Avatar"} data-ai-hint="avatar profile" />
-            <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.displayName || "User"}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user.email || "No email"}
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
+    <div className={cn(state === 'collapsed' && "flex justify-center w-full")}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+            <Avatar className="h-10 w-10 border">
+              <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? "User Avatar"} data-ai-hint="avatar profile" />
+              <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{user.displayName || "User"}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {user.email || "No email"}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem>
+              <UserCircle2 className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
           <DropdownMenuItem>
-            <UserCircle2 className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Log out</span>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
