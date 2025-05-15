@@ -26,7 +26,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
-  SidebarTrigger, // Used in PageHeader now
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { AppLogo } from '@/components/common/AppLogo';
 import { UserNav } from '@/components/common/UserNav';
@@ -43,7 +43,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'AssistAI - Your Intelligent Assistant Platform',
+  title: 'ZEKA - Your Intelligent Assistant Platform',
   description: 'Configure, test, and monitor AI assistants for your business.',
 };
 

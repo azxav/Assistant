@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { SidebarTrigger } from '@/components/ui/sidebar'; // Assuming SidebarTrigger is available
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 type PageHeaderProps = {
   title: string;
@@ -11,9 +11,7 @@ type PageHeaderProps = {
 export function PageHeader({ title, description, icon: Icon, actionButton }: PageHeaderProps) {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur md:px-6 mb-6">
-      <div className="md:hidden"> {/* Show trigger only on mobile, sidebar handles desktop */}
-        <SidebarTrigger />
-      </div>
+      <SidebarTrigger /> {/* Sidebar toggle button, now visible on all screen sizes */}
       <div className="flex-1">
         <div className="flex items-center gap-3">
           {Icon && <Icon className="h-6 w-6 text-muted-foreground" />}

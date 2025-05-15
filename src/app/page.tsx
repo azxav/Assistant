@@ -11,7 +11,7 @@ export default function DashboardPage() {
     <div className="flex flex-col min-h-screen">
       <PageHeader
         title="Dashboard"
-        description="Welcome back to AssistAI! Here's an overview of your assistants."
+        description="Welcome back to ZEKA! Here's an overview of your assistants."
         icon={LayoutDashboard}
       />
       <main className="flex-1 p-4 md:p-6 space-y-6">
@@ -115,7 +115,7 @@ export default function DashboardPage() {
         <Card className="shadow-md">
           <CardHeader>
             <CardTitle>Quick Start</CardTitle>
-            <CardDescription>Get started with key features of AssistAI.</CardDescription>
+            <CardDescription>Get started with key features of ZEKA.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <Link href="/configure">

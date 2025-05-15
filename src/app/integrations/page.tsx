@@ -59,7 +59,7 @@ export default function IntegrationsPage() {
     <div className="flex flex-col min-h-screen">
       <PageHeader
         title="Platform Integrations"
-        description="Connect AssistAI with your favorite messaging platforms and tools."
+        description="Connect ZEKA with your favorite messaging platforms and tools."
         icon={Share2}
         actionButton={
           <Button><Zap className="mr-2 h-4 w-4" /> Request Integration</Button>
