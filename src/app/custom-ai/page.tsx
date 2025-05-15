@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -41,35 +42,49 @@ const customAssistantSchema = z.object({
 
 type CustomAssistantFormData = z.infer<typeof customAssistantSchema>;
 
+interface KnowledgeBaseOption {
+  id: string;
+  name: string;
+  documentCount: number;
+}
+
 const geminiModels = [
   { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Latest fast and versatile model.' },
   { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash-Lite', description: 'A lighter version of Gemini 2.0 Flash.' },
-  // Add other models here if needed, e.g., a general purpose one if the above are too specific
-  // For example, if there's a general Gemini 2.0 Pro or similar available and desired:
   // { id: 'gemini-2.0-pro', name: 'Gemini 2.0 Pro', description: 'Most capable Gemini 2.0 model.' }, 
 ];
 
 export default function CustomAIPage() {
-  const [knowledgeBases, setKnowledgeBases] = useState<{id: string, name: string, documentCount: number}[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBaseOption[]>([]);
+  const [isLoadingKBs, setIsLoadingKBs] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
-    // Fetch real knowledge base data
+    setIsLoadingKBs(true);
     fetch('/api/kb/knowledgebase')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
-        const kbOptions = data.documents.map((d: any) => ({
-          id: d.file_path,
-          name: d.file_path.split(/[/\\]/).pop(),
-          documentCount: d.chunks || 0
-        }));
-        setKnowledgeBases(kbOptions);
-        setIsLoading(false);
+        if (data && data.documents) {
+          const kbOptions = data.documents.map((d: any) => ({
+            id: d.file_path, // Using file_path as a unique ID for the KB
+            name: d.file_path.split(/[/\\]/).pop() || d.file_path, // Extract filename
+            documentCount: d.chunks || 0
+          }));
+          setKnowledgeBases(kbOptions);
+        } else {
+          setKnowledgeBases([]);
+        }
+        setIsLoadingKBs(false);
       })
       .catch(err => {
         console.error('Failed to fetch knowledge bases:', err);
-        setIsLoading(false);
+        setKnowledgeBases([]); // Set to empty on error
+        setIsLoadingKBs(false);
+        // TODO: Show a user-friendly error message here, e.g., using a toast
       });
   }, []);
 
@@ -77,7 +92,7 @@ export default function CustomAIPage() {
     resolver: zodResolver(customAssistantSchema),
     defaultValues: {
       assistantName: "",
-      selectedModelId: "",
+      selectedModelId: geminiModels[0]?.id || "", // Default to first model if available
       selectedKnowledgeBaseIds: [],
     },
   });
@@ -89,11 +104,10 @@ export default function CustomAIPage() {
     localStorage.setItem('customAssistant', JSON.stringify({
       name: data.assistantName,
       model: data.selectedModelId,
-      knowledgeBases: data.selectedKnowledgeBaseIds
+      knowledgeBases: data.selectedKnowledgeBaseIds // These are the file_paths
     }));
     
     alert("Custom Assistant configuration saved! You can now test it in the Playground.");
-    // Here you would typically send data to a server / use Server Action
   };
 
   const selectedModelInfo = geminiModels.find(m => m.id === form.watch("selectedModelId"));
@@ -172,13 +186,13 @@ export default function CustomAIPage() {
                     <CardDescription>Select the knowledge bases this assistant can access (up to 3).</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {isLoading ? (
+                    {isLoadingKBs ? (
                       <div className="py-4 text-center text-muted-foreground">
                         Loading knowledge bases...
                       </div>
                     ) : knowledgeBases.length === 0 ? (
                       <div className="py-4 text-center text-muted-foreground">
-                        No knowledge bases found. Please add documents to your knowledge base first.
+                        No knowledge bases found. Please add documents via the 'Knowledge Base' page.
                       </div>
                     ) : (
                       <FormField
@@ -210,13 +224,16 @@ export default function CustomAIPage() {
                               ))}
                             </div>
                             <FormMessage className="pt-2" />
+                             <FormDescription className="pt-2">
+                                Only knowledge bases uploaded as PDF or TXT files and indexed will appear here.
+                              </FormDescription>
                           </FormItem>
                         )}
                       />
                     )}
                   </CardContent>
                 </Card>
-                <Button type="submit" size="lg" className="w-full md:w-auto" disabled={isLoading || knowledgeBases.length === 0}>
+                <Button type="submit" size="lg" className="w-full md:w-auto" disabled={isLoadingKBs || knowledgeBases.length === 0}>
                   <Save className="mr-2 h-4 w-4" /> Create Custom Assistant
                 </Button>
               </div>
@@ -262,3 +279,5 @@ export default function CustomAIPage() {
     </div>
   );
 }
+
+    
