@@ -1,3 +1,4 @@
+
 "use client"; // For state management of selected conversation and messages
 
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,11 @@ export default function MonitoringPage() {
   const [conversations, setConversations] = useState<Conversation[]>(mockConversations);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(mockConversations[0] || null);
   const chatDisplayRef = useRef<HTMLDivElement>(null);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   useEffect(() => {
     if (chatDisplayRef.current) {
@@ -131,7 +137,7 @@ export default function MonitoringPage() {
                       {conv.lastMessage}
                     </p>
                     <p className={cn("text-xs mt-1", selectedConversation?.id === conv.id ? "text-accent-foreground/60" : "text-muted-foreground")}>
-                      {conv.lastMessageTimestamp.toLocaleTimeString()} - {conv.lastMessageTimestamp.toLocaleDateString()}
+                      {hasMounted ? `${conv.lastMessageTimestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${conv.lastMessageTimestamp.toLocaleDateString()}` : ""}
                     </p>
                   </button>
                 ))}
@@ -183,7 +189,7 @@ export default function MonitoringPage() {
                           "text-xs mt-1",
                           message.sender === "user" ? "text-primary-foreground/70 text-right" : "text-muted-foreground/70 text-left"
                         )}>
-                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {hasMounted ? message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
                         </p>
                       </div>
                       {message.sender === "user" && (

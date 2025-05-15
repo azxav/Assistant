@@ -1,3 +1,4 @@
+
 "use client"; // For chat interactions and state
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,11 @@ export default function PlaygroundPage() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputValue, setInputValue] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   useEffect(() => {
     // Scroll to bottom when messages change
@@ -146,7 +152,7 @@ export default function PlaygroundPage() {
                           "text-xs mt-1",
                           message.sender === "user" ? "text-primary-foreground/70 text-right" : "text-muted-foreground/70 text-left"
                         )}>
-                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {hasMounted ? message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
                       </p>
                     </div>
                     {message.sender === "user" && (
