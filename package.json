@@ -4,13 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack -p 3000",
+    "kb:dev": "python python_kb/service.py",
+    "dev:all": "concurrently \"npm run dev\" \"npm run kb:dev\"",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
     "build": "next build",
     "start": "next start",
+    "start:all": "concurrently \"npm run start\" \"npm run kb:dev\"",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit",
-    "kb:dev": "python python_kb/service.py"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.8.0",
