@@ -8,6 +8,7 @@ import {
   PlayCircle,
   Monitor,
   Share2,
+  BrainCircuit, // Added BrainCircuit
 } from 'lucide-react';
 
 import './globals.css';
@@ -22,7 +23,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
-  SidebarTrigger, // Keep SidebarTrigger import
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { AppLogo } from '@/components/common/AppLogo';
 import { UserNav } from '@/components/common/UserNav';
@@ -46,6 +47,7 @@ export const metadata: Metadata = {
 const navItems = [
   { href: "/", icon: LayoutDashboard, label: "Dashboard", tooltip: "Overview" },
   { href: "/configure", icon: Settings2, label: "Configuration", tooltip: "Set up Assistants" },
+  { href: "/custom-ai", icon: BrainCircuit, label: "Custom AI", tooltip: "Create Custom Assistants" }, // New Item
   { href: "/knowledge", icon: BookOpenText, label: "Knowledge Base", tooltip: "Manage Data" },
   { href: "/playground", icon: PlayCircle, label: "Playground", tooltip: "Test Assistants" },
   { href: "/monitoring", icon: Monitor, label: "Chat Monitoring", tooltip: "View Conversations" },
@@ -63,10 +65,9 @@ export default function RootLayout({
         <SidebarProvider defaultOpen={true} collapsible="icon">
           <Sidebar variant="sidebar" collapsible="icon" className="border-r">
             <SidebarHeader className="p-0">
-              {/* This div's justify content will change based on sidebar state */}
               <div className="flex h-16 items-center justify-between border-b px-4 group-data-[state=collapsed]:justify-center">
                  <AppLogo />
-                 <SidebarTrigger /> {/* SidebarTrigger remains here */}
+                 <SidebarTrigger />
               </div>
             </SidebarHeader>
             <SidebarContent className="p-2">
@@ -77,9 +78,8 @@ export default function RootLayout({
                       <SidebarMenuButton
                         asChild
                         tooltip={{ children: item.tooltip, side: "right", align: "center" }}
-                        // isActive can be determined by path, not implemented here for simplicity
                       >
-                        <a> {/* Use <a> tag for Next.js Link child */}
+                        <a>
                           <item.icon />
                           <span>{item.label}</span>
                         </a>
