@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PageHeader } from "@/components/common/PageHeader";
 import { BookOpenText, UploadCloud, FileText, Trash2, AlertTriangle } from "lucide-react";
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent, useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
 
 interface UploadedFile {
@@ -19,18 +19,33 @@ interface UploadedFile {
   status: 'processing' | 'completed' | 'failed';
 }
 
-const initialFiles: UploadedFile[] = [
-  { id: "1", name: "product_manual_v2.pdf", type: "PDF", size: "2.3MB", uploadDate: "2024-07-15", status: "completed" },
-  { id: "2", name: "faq_updates_q3.txt", type: "TXT", size: "150KB", uploadDate: "2024-07-14", status: "completed" },
-  { id: "3", name: "api_documentation.pdf", type: "PDF", size: "5.1MB", uploadDate: "2024-07-16", status: "processing" },
-];
-
+const initialFiles: UploadedFile[] = [];
 
 export default function KnowledgePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(initialFiles);
+
+  useEffect(() => {
+    // fetch current docs on page load
+    fetch("/api/kb/knowledgebase")
+      .then(r => r.json())
+      .then(data => {
+        const rows = data.documents.map((d: any) => ({
+          id: d.file_path,
+          name: d.file_path.split(/[/\\]/).pop(),
+          type: d.file_path.endsWith(".pdf") ? "PDF" : "TXT",
+          size: `${d.chunks} chunks`,
+          uploadDate: new Date(d.metadata?.indexed_at ?? Date.now()).toISOString().split("T")[0],
+          status: "completed",
+        }));
+        setUploadedFiles(rows);
+      })
+      .catch(err => {
+        console.error("Failed to fetch knowledge base:", err);
+      });
+  }, []);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -47,34 +62,118 @@ export default function KnowledgePage() {
     setIsUploading(true);
     setUploadProgress(0);
 
-    // Simulate upload
+    const tempId = String(Date.now()); 
+    const currentSelectedFile = selectedFile; // Capture selectedFile at this moment
     const newFileEntry: UploadedFile = {
-      id: String(Date.now()),
-      name: selectedFile.name,
-      type: selectedFile.type.split('/')[1]?.toUpperCase() || 'File',
-      size: `${(selectedFile.size / (1024 * 1024)).toFixed(1)}MB`,
+      id: tempId,
+      name: currentSelectedFile.name,
+      type: currentSelectedFile.type.split('/')[1]?.toUpperCase() || 'File',
+      size: `${(currentSelectedFile.size / (1024 * 1024)).toFixed(1)}MB`,
       uploadDate: new Date().toISOString().split('T')[0],
       status: 'processing',
     };
     setUploadedFiles(prev => [newFileEntry, ...prev]);
 
+    let uploadStepError = null;
 
-    for (let i = 0; i <= 100; i += 10) {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      setUploadProgress(i);
+    try {
+      const formData = new FormData();
+      formData.append("file", currentSelectedFile);
+
+      for (let i = 0; i <= 30; i += 5) {
+        await new Promise(resolve => setTimeout(resolve, 30));
+        setUploadProgress(i);
+      }
+
+      const uploadResponse = await fetch("/api/kb/upload-file", {
+        method: "POST",
+        body: formData,
+      });
+
+      for (let i = 31; i <= 70; i += 2) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        setUploadProgress(i);
+      }
+
+      if (!uploadResponse.ok) {
+        let errorJson;
+        try {
+          errorJson = await uploadResponse.json();
+          uploadStepError = `Upload API call failed: ${errorJson?.detail?.error || errorJson?.detail || errorJson?.message || `status ${uploadResponse.status}`}`;
+        } catch (e) {
+          uploadStepError = `Upload API call failed: ${uploadResponse.statusText || `status ${uploadResponse.status}`}`;
+        }
+        throw new Error(uploadStepError);
+      }
+
+      const result = await uploadResponse.json();
+
+      if (!result.success) {
+        uploadStepError = `Backend processing failed: ${result.message || "Unknown backend error."}`;
+        throw new Error(uploadStepError);
+      }
+      
+      for (let i = 71; i <= 100; i += 3) {
+        await new Promise(resolve => setTimeout(resolve, 40));
+        setUploadProgress(i);
+      }
+
+      alert(`File '${currentSelectedFile.name}' acknowledged by server. Refreshing list...`);
+      
+      await new Promise(resolve => setTimeout(resolve, 1500)); 
+
+      const kbResponse = await fetch("/api/kb/knowledgebase");
+      if (!kbResponse.ok) {
+        let errorJson;
+        try {
+            errorJson = await kbResponse.json();
+            uploadStepError = `Failed to refresh list: ${errorJson?.detail?.error || errorJson?.detail || errorJson?.message || `status ${kbResponse.status}`}`;
+        } catch(e) {
+            uploadStepError = `Failed to refresh list: ${kbResponse.statusText || `status ${kbResponse.status}`}`;
+        }
+        throw new Error(uploadStepError);
+      }
+      const kbData = await kbResponse.json();
+      
+      const rows = kbData.documents.map((d: any) => ({
+        id: d.file_path, 
+        name: d.file_path.split(/[/\\]/).pop(),
+        type: d.file_path.endsWith(".pdf") ? "PDF" : "TXT",
+        size: `${d.chunks} chunks`,
+        uploadDate: new Date(d.metadata?.indexed_at ?? d.metadata?.timestamp ?? Date.now()).toISOString().split("T")[0],
+        status: "completed", 
+      }));
+      
+      setUploadedFiles(rows); // Replace completely with the fresh list from backend
+
+    } catch (error: any) {
+      console.error("Upload process failed:", error.message);
+      alert(`Upload failed: ${uploadStepError || error.message}`); // Prioritize specific step error
+      setUploadedFiles(prev => prev.map(f => 
+        f.id === tempId ? {...f, status: 'failed'} : f
+      ));
+    } finally {
+      setIsUploading(false);
+      setSelectedFile(null);
+      setUploadProgress(0);
     }
-    
-    setUploadedFiles(prev => prev.map(f => f.id === newFileEntry.id ? {...f, status: 'completed'} : f));
-    setIsUploading(false);
-    setSelectedFile(null); 
-    // Reset file input visually if possible (browser specific)
-    // Consider using a key on the input to force re-render or reset the form field
   };
 
-  const handleDeleteFile = (fileId: string) => {
-    // Simulate deletion
-    setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
-    alert(`File with ID ${fileId} would be deleted.`);
+  const handleDeleteFile = async (fileId: string) => {
+    try {
+      // Real deletion
+      await fetch("/api/kb/delete-index", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: fileId })
+      });
+
+      // Update UI
+      setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
+    } catch (error) {
+      console.error(`Failed to delete file ${fileId}:`, error);
+      alert(`Error deleting file: ${error}`);
+    }
   };
 
   return (

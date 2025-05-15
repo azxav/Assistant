@@ -1,0 +1,28 @@
+# Knowledge Base Sample Document
+
+## Introduction
+This is a sample document to test the knowledge base functionality. It contains information about our fictional company's policies and products.
+
+## Products
+Our company offers the following products:
+1. ProductA - A powerful tool for data analysis
+2. ProductB - A user-friendly design application 
+3. ProductC - An AI-powered assistant for workflow automation
+
+## Pricing
+- ProductA: $99/month or $990/year
+- ProductB: $49/month or $490/year  
+- ProductC: $149/month or $1490/year
+
+We offer a 14-day free trial for all products.
+
+## Refund Policy
+We offer a 30-day money-back guarantee for all our products. If you're not satisfied with your purchase, you can request a full refund within 30 days of purchase.
+
+For annual subscriptions, we offer prorated refunds after the first 30 days.
+
+## Contact Information
+- Customer Support: support@example.com
+- Sales: sales@example.com
+- Phone: 1-800-123-4567
+- Hours: Monday-Friday, 9am-5pm PST 

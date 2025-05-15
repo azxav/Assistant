@@ -1,7 +1,6 @@
-
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
 import * as z from "zod";
@@ -43,19 +42,37 @@ const customAssistantSchema = z.object({
 type CustomAssistantFormData = z.infer<typeof customAssistantSchema>;
 
 const geminiModels = [
-  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', description: 'Fast and versatile model for various tasks.' },
-  { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', description: 'Most capable model for complex reasoning.' },
-  { id: 'gemini-1.0-pro', name: 'Gemini 1.0 Pro', description: 'Balanced model for general purpose use.' },
-];
-
-const mockKnowledgeBases = [
-  { id: "kb1", name: "Product Manuals Q2 2024", documentCount: 5 },
-  { id: "kb2", name: "Customer FAQs - General", documentCount: 120 },
-  { id: "kb3", name: "API Developer Docs", documentCount: 35 },
-  { id: "kb4", name: "Marketing Swipe Files", documentCount: 25 },
+  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Latest fast and versatile model.' },
+  { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash-Lite', description: 'A lighter version of Gemini 2.0 Flash.' },
+  // Add other models here if needed, e.g., a general purpose one if the above are too specific
+  // For example, if there's a general Gemini 2.0 Pro or similar available and desired:
+  // { id: 'gemini-2.0-pro', name: 'Gemini 2.0 Pro', description: 'Most capable Gemini 2.0 model.' }, 
 ];
 
 export default function CustomAIPage() {
+  const [knowledgeBases, setKnowledgeBases] = useState<{id: string, name: string, documentCount: number}[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+    // Fetch real knowledge base data
+    fetch('/api/kb/knowledgebase')
+      .then(res => res.json())
+      .then(data => {
+        const kbOptions = data.documents.map((d: any) => ({
+          id: d.file_path,
+          name: d.file_path.split(/[/\\]/).pop(),
+          documentCount: d.chunks || 0
+        }));
+        setKnowledgeBases(kbOptions);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch knowledge bases:', err);
+        setIsLoading(false);
+      });
+  }, []);
+
   const form = useForm<CustomAssistantFormData>({
     resolver: zodResolver(customAssistantSchema),
     defaultValues: {
@@ -67,12 +84,20 @@ export default function CustomAIPage() {
 
   const onSubmit = (data: CustomAssistantFormData) => {
     console.log("Custom Assistant Configuration Data:", data);
-    alert("Custom Assistant configuration submitted! Check console for data.");
+    
+    // Store in localStorage for easy retrieval in Playground
+    localStorage.setItem('customAssistant', JSON.stringify({
+      name: data.assistantName,
+      model: data.selectedModelId,
+      knowledgeBases: data.selectedKnowledgeBaseIds
+    }));
+    
+    alert("Custom Assistant configuration saved! You can now test it in the Playground.");
     // Here you would typically send data to a server / use Server Action
   };
 
   const selectedModelInfo = geminiModels.find(m => m.id === form.watch("selectedModelId"));
-  const selectedKBsInfo = mockKnowledgeBases.filter(kb => form.watch("selectedKnowledgeBaseIds")?.includes(kb.id));
+  const selectedKBsInfo = knowledgeBases.filter(kb => form.watch("selectedKnowledgeBaseIds")?.includes(kb.id));
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -147,41 +172,51 @@ export default function CustomAIPage() {
                     <CardDescription>Select the knowledge bases this assistant can access (up to 3).</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <FormField
-                      control={form.control}
-                      name="selectedKnowledgeBaseIds"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="space-y-3 pt-2">
-                            {mockKnowledgeBases.map((kb) => (
-                              <FormItem key={kb.id} className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-3 shadow-sm hover:shadow-md transition-shadow">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(kb.id)}
-                                    onCheckedChange={(checked) => {
-                                      const currentValues = field.value || [];
-                                      if (checked) {
-                                        field.onChange([...currentValues, kb.id]);
-                                      } else {
-                                        field.onChange(currentValues.filter((id) => id !== kb.id));
-                                      }
-                                    }}
-                                    disabled={!field.value?.includes(kb.id) && field.value?.length >= 3}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal text-sm leading-none w-full cursor-pointer">
-                                  {kb.name} <span className="text-xs text-muted-foreground">({kb.documentCount} documents)</span>
-                                </FormLabel>
-                              </FormItem>
-                            ))}
-                          </div>
-                          <FormMessage className="pt-2" />
-                        </FormItem>
-                      )}
-                    />
+                    {isLoading ? (
+                      <div className="py-4 text-center text-muted-foreground">
+                        Loading knowledge bases...
+                      </div>
+                    ) : knowledgeBases.length === 0 ? (
+                      <div className="py-4 text-center text-muted-foreground">
+                        No knowledge bases found. Please add documents to your knowledge base first.
+                      </div>
+                    ) : (
+                      <FormField
+                        control={form.control}
+                        name="selectedKnowledgeBaseIds"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="space-y-3 pt-2">
+                              {knowledgeBases.map((kb) => (
+                                <FormItem key={kb.id} className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-3 shadow-sm hover:shadow-md transition-shadow">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(kb.id)}
+                                      onCheckedChange={(checked) => {
+                                        const currentValues = field.value || [];
+                                        if (checked) {
+                                          field.onChange([...currentValues, kb.id]);
+                                        } else {
+                                          field.onChange(currentValues.filter((id) => id !== kb.id));
+                                        }
+                                      }}
+                                      disabled={!field.value?.includes(kb.id) && field.value?.length >= 3}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal text-sm leading-none w-full cursor-pointer">
+                                    {kb.name} <span className="text-xs text-muted-foreground">({kb.documentCount} chunks)</span>
+                                  </FormLabel>
+                                </FormItem>
+                              ))}
+                            </div>
+                            <FormMessage className="pt-2" />
+                          </FormItem>
+                        )}
+                      />
+                    )}
                   </CardContent>
                 </Card>
-                <Button type="submit" size="lg" className="w-full md:w-auto">
+                <Button type="submit" size="lg" className="w-full md:w-auto" disabled={isLoading || knowledgeBases.length === 0}>
                   <Save className="mr-2 h-4 w-4" /> Create Custom Assistant
                 </Button>
               </div>

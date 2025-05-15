@@ -1,0 +1,11 @@
+supabase
+python-dotenv
+tenacity
+numpy
+hnswlib
+pymupdf4llm
+langchain
+google-generativeai
+google-cloud-aiplatform
+fastapi
+uvicorn 
